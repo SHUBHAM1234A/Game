@@ -1,0 +1,7 @@
+{
+    "liveServer.settings.port": 9999,
+    "discord.removeDetails": true,
+    "discord.removeTimestamp": true,
+    "discord.lowerDetailsEditing": "",
+    "discord.enabled": false
+}
