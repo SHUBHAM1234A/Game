@@ -6,14 +6,16 @@ var y = null, y_char2 = null, speed = 4, walking_char = false, walking_char2 = f
 var gunImg, gun, gunGRP, bullet, bullet2, bulletIMG;
 var meds, medImg, medsGRP;
 var hp_char = 100, hp_char2 = 100, char_score = 0, char2_score = 0, deathAnim_WAIT = 0, a = 5;
-var bulletSound
+var bulletSound, bGrp, bGrp2;
+var chkch2, chkch2IMG, ch2kch, ch2kchIMG, chw, chwIMG, ch2w, ch2wIMG, replay, replayIMG, replayIMG2;
+var GameState = 'play'
 
 function preload() {
     bg = loadImage("Images/Ground.png");
     gunImg = loadImage("Images/gun.png");
     medImg = loadImage("Images/Medikit.png");
-    bulletIMG = loadImage("Images/Bullet.jpg")
-    bulletSound = loadSound("Sound/gunshot.mp3")
+    bulletIMG = loadImage("Images/Bullet.jpg");
+    bulletSound = loadSound("Sound/gunshot.mp3");
 
     deadth_anim = loadAnimation("Images/Player/death animation/death1.png", "Images/Player/death animation/death2.png", "Images/Player/death animation/death3.png", "Images/Player/death animation/death4.png");//die
 
@@ -52,43 +54,73 @@ function preload() {
     attackRight_withWeapon = loadAnimation("Images/Player/Character with pistol/attack/shoot right1.png", "Images/Player/Character with pistol/attack/shoot right2.png", "Images/Player/Character with pistol/attack/shoot right3.png", "Images/Player/Character with pistol/attack/shoot right4.png")
     attackLeft_withWeapon = loadAnimation("Images/Player/Character with pistol/attack/shoot left1.png", "Images/Player/Character with pistol/attack/shoot left2.png", "Images/Player/Character with pistol/attack/shoot left3.png", "Images/Player/Character with pistol/attack/shoot left4.png")
 
+    chkch2IMG = loadImage("Images/win & lose/Untitled.png");
+    ch2kchIMG = loadImage("Images/win & lose/Untitled (1).png");
+    chwIMG = loadImage("Images/win & lose/Untitled (2).png");
+    ch2wIMG = loadImage("Images/win & lose/Untitled (3).png");
+
+    replayIMG = loadImage("Images/New folder/image (2).png")
+    replayIMG2 = loadImage("Images/New folder/image (1).png")
 }
 
 function setup() {
     createCanvas(displayWidth - 30, displayHeight - 140);
 
+    chkch2 = createSprite(width / 2, height / 2, 100, 100);
+    chkch2.visible = false;
+
+    ch2kch = createSprite(width / 2, height / 2, 100, 100);
+    ch2kch.visible = false;
+
+    chw = createSprite(width / 2, height / 2, 100, 100);
+    chw.visible = false;
+
+    ch2w = createSprite(width / 2, height / 2, 100, 100);
+    ch2w.visible = false;
+
+    replay = createSprite(width / 2, height / 1.5, 100, 100)
+    replay.visible = false;
+
     char_1();
     char_2();
 
+    //char_score = 4
+
     gunGRP = new Group();
+    bGrp = new Group();
+    bGrp2 = new Group();
     medsGRP = new Group();
 }
 
 function draw() {
     background(bg);
-
-    if (char_gun === false) {
-        walk_without_weapon_char();
-        atttack_without_weapon_char();
-        roll_without_weapon_char();
-    } else if (char_gun === true) {
-        walk_with_weapon_char();
-        atttack_with_weapon_char();
+    if (GameState === 'play') {
+        if (char_dead === false) {
+            if (char_gun === false) {
+                walk_without_weapon_char();
+                atttack_without_weapon_char();
+                roll_without_weapon_char();
+            } else if (char_gun === true) {
+                walk_with_weapon_char();
+                atttack_with_weapon_char();
+            }
+        }
+        if (char2_dead === false) {
+            if (char2_gun === false) {
+                walk_without_weapon_char2();
+                atttack_without_weapon_char2();
+                roll_without_weapon_char2();
+            } else if (char2_gun === true) {
+                walk_with_weapon_char2();
+                atttack_with_weapon_char2();
+            }
+        }
+        spawn_guns();
+        spawn_meds();
+        spwan_char();
+        spwan_char2();
     }
 
-    if (char2_gun === false) {
-        walk_without_weapon_char2();
-        atttack_without_weapon_char2();
-        roll_without_weapon_char2();
-    } else if (char2_gun === true) {
-        walk_with_weapon_char2();
-        atttack_with_weapon_char2();
-    }
-
-    spawn_guns();
-    spawn_meds();
-    spwan_char();
-    spwan_char2();
 
     drawSprites();
 
@@ -109,10 +141,68 @@ function draw() {
 
     text(`Player 1 SCORE: ${Math.round(char_score)}`, displayWidth - 300, 80)
     text(`Player 2 SCORE: ${Math.round(char2_score)}`, displayWidth - 1520, 80)
+
+    if (char2_dead === true) {
+        chkch2.visible = true
+        chkch2.addImage(chkch2IMG)
+        chkch2.scale = 0.5
+    } else {
+        chkch2.visible = false
+    }
+
+    if (char_dead === true) {
+        ch2kch.visible = true
+        ch2kch.addImage(ch2kchIMG)
+        ch2kch.scale = 0.5
+    } else {
+        ch2kch.visible = false
+    }
+
+    if (char_score === 5) {
+        chw.visible = true
+        ch2kch.visible = false
+        chkch2.visible = false
+        chw.addImage(chwIMG)
+        chw.scale = 0.5
+        GameState = 'ch1 won'
+    } else {
+        chw.visible = false
+    }
+
+    if (char2_score === 5) {
+        ch2w.visible = true
+        ch2kch.visible = false
+        chkch2.visible = false
+        ch2w.addImage(ch2wIMG)
+        ch2w.scale = 0.5
+        GameState = 'ch2 won'
+    } else {
+        ch2w.visible = false
+    }
+
+    if (GameState === 'ch1 won' || GameState === 'ch2 won') {
+        replay.visible = true;
+        replay.addImage(replayIMG);
+        replay.scale = 0.7
+        if (mouseIsOver(replay)) {
+            replay.addImage(replayIMG2)
+            if (mousePressedOver(replay)) {
+                GameState = 'play';
+                char_score = 0;
+                char2_score = 0;
+                char.x = 1300
+                char.y = height / 2
+                char2.x = 150
+                char2.y = height / 2
+            }
+        }
+    } else {
+        replay.visible = false;
+    }
 }
 
 function char_1() {
-    char = createSprite(width / 2, height / 2, 10, 10);
+    char = createSprite(1300, height / 2, 10, 10);
     char.scale = 4;
     char.setCollider("rectangle", 0, 0, 10, 10);
 
@@ -155,11 +245,9 @@ function char_1() {
 }
 
 function char_2() {
-    char2 = createSprite(width / 4, height / 4, 10, 10);
+    char2 = createSprite(150, height / 2, 10, 10);
     char2.scale = 4;
     char2.setCollider("rectangle", 0, 0, 10, 10)
-    char2.debug = true
-
     char2.addAnimation("idleDown_withoutWeapon", idleDown_withoutWeapon);
     char2.addAnimation("idleUp_withoutWeapon", idleUp_withoutWeapon);
     char2.addAnimation("idleRight_withoutWeapon", idleRight_withoutWeapon);
@@ -466,38 +554,36 @@ function walk_with_weapon_char2() {
 }
 
 function atttack_with_weapon_char() {
+    if (bGrp.isTouching(char2)) {
+        hp_char2 -= 10;
+    }
+
     if (keyDown("o")) {
-        if (y === "down") {
+        if (y === "down" && hp_char > 0) {
             char.changeAnimation("attackDown_withWeapon", attackDown_withWeapon);
             bullets_char()
-            bullet.velocityY = 30
+            bGrp.setVelocityEach(0, 30);
         }
 
-        if (y === "up") {
+        if (y === "up" && hp_char > 0) {
             char.changeAnimation("attackUp_withWeapon", attackUp_withWeapon);
             bullets_char()
-            bullet.velocityY = -30
+            bGrp.setVelocityEach(0, -30);
         }
 
-        if (y === "right") {
+        if (y === "right" && hp_char > 0) {
             char.changeAnimation("attackRight_withWeapon", attackRight_withWeapon);
             bullets_char()
-            bullet.velocityX = 30
+            bGrp.setVelocityEach(30, 0);
         }
 
-        if (y === "left") {
+        if (y === "left" && hp_char > 0) {
             char.changeAnimation("attackLeft_withWeapon", attackLeft_withWeapon);
             bullets_char()
-            bullet.velocityX = -30
+            bGrp.setVelocityEach(-30, 0);
         }
 
-        if (char.isTouching(char2)) {
-            hp_char2 -= 1.5;
-        }
 
-        if (bullet.isTouching(char2)) {
-            hp_char2 -= 10;
-        }
     }
 
 
@@ -516,33 +602,33 @@ function atttack_with_weapon_char() {
 }
 
 function atttack_with_weapon_char2() {
+    if (bGrp2.isTouching(char)) {
+        hp_char -= 10;
+    }
+
     if (keyDown("space")) {
-        if (y_char2 === "down") {
+        if (y_char2 === "down" && hp_char2 != 0) {
             char2.changeAnimation("attackDown_withWeapon", attackDown_withWeapon);
-            bullets_char()
-            bullet.velocityY = 30
+            bullets_char2()
+            bGrp2.setVelocityEach(0, 30);
         }
 
-        if (y_char2 === "up") {
+        if (y_char2 === "up" && hp_char2 != 0) {
             char2.changeAnimation("attackUp_withWeapon", attackUp_withWeapon);
-            bullets_char()
-            bullet.velocityY = -30
+            bullets_char2()
+            bGrp2.setVelocityEach(0, -30);
         }
 
-        if (y_char2 === "right") {
+        if (y_char2 === "right" && hp_char2 != 0) {
             char2.changeAnimation("attackRight_withWeapon", attackRight_withWeapon);
-            bullets_char()
-            bullet.velocityX = 30
+            bullets_char2()
+            bGrp2.setVelocityEach(30, 0);
         }
 
-        if (y_char2 === "left") {
+        if (y_char2 === "left" && hp_char2 != 0) {
             char2.changeAnimation("attackLeft_withWeapon", attackLeft_withWeapon);
-            bullets_char()
-            bullet.velocityX = -30
-        }
-
-        if (bullet.isTouching(char2)) {
-            hp_char -= 1.5;
+            bullets_char2()
+            bGrp2.setVelocityEach(-30, 0);
         }
     }
 
@@ -560,42 +646,39 @@ function atttack_with_weapon_char2() {
 }
 
 function bullets_char() {
-    bullet = createSprite(1000,1000,100,100);
-    bullet.visible = false;
-    bullet.debug = true
-    bullet.setCollider("rectangle", 0, 0, 1000, 1000);
-
     if (frameCount % 14 === 0) {
+        bullet = createSprite(char.x, char.y, 10, 10);
+        bullet.setCollider("rectangle", 0, 0, 30, 30);
         console.log(a);
-        bullet.visible = true
+        //bullet.visible = true
         bulletSound.play();
         bullet.addImage(bulletIMG);
-        
-        bullet.x = char.x
-        bullet.y = char.y
-        bullet.lifetime = 40;
+        // bullet.x = char.x
+        // bullet.y = char.y
+        bullet.lifetime = 50
         bullet.scale = 0.02
         a = 1
+        bGrp.add(bullet);
     }
 }
 
 function bullets_char2() {
-    bullet2 = createSprite(100, 100, 100, 100);
-    bullet2.visible = false
     if (frameCount % 15 === 0) {
+        bullet2 = createSprite(char2.x, char2.y, 10, 10);
+        bullet2.setCollider("rectangle", 0, 0, 30, 30);
         console.log(a);
         bulletSound.play();
-        bullet2 = createSprite(100, 100, 100, 100);
         bullet2.addImage(bulletIMG);
-        bullet2.x = char2.x
-        bullet2.y = char2.y
-        bullet2.lifetime = 40;
+        // bullet2.x = char2.x
+        // bullet2.y = char2.y
+        bullet2.lifetime = 50
         bullet2.scale = 0.02
+        bGrp2.add(bullet2);
     }
 }
 
 function spawn_guns() {
-    if (frameCount % 30 === 0) {
+    if (frameCount % 150 === 0) {
         gun = createSprite(Math.round(random(0, 1080)), Math.round(random(0, 1920)), 10, 10);
         gun.addImage(gunImg);
         gun.scale = 0.15;
@@ -638,9 +721,13 @@ function spwan_char() {
     if (char_dead === true) {
         if (frameCount % 180 === 0) {
             char_dead = false;
-            console.log("all ok")
             hp_char = 100
             char_1();
+            char_gun = false
+            const generateRandomNumber = (min, max) => {
+                return Math.floor(Math.random() * (max - min) + min);
+            };
+            char.y = generateRandomNumber(100, height - 50);
         }
     }
 }
@@ -651,6 +738,11 @@ function spwan_char2() {
             char2_dead = false
             hp_char2 = 100
             char_2();
+            char2_gun = false
+            const generateRandomNumber = (min, max) => {
+                return Math.floor(Math.random() * (max - min) + min);
+            };
+            char2.y = generateRandomNumber(100, height - 50);
         }
     }
 }
